@@ -1,0 +1,1285 @@
+<!DOCTYPE html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>EL ESPADA NEGRA | HistoComic</title>
+    <link
+      href="https://fonts.googleapis.com/css2?family=Bangers&family=Poppins:wght@300;400;600;700&family=Russo+One&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      /* ===== ESTILOS BASE ===== */
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+
+      body {
+        font-family: "Poppins", sans-serif;
+        background: #0a0a0a;
+        color: #fff;
+        min-height: 100vh;
+        overflow-x: hidden;
+      }
+
+      /* Fondo cómic */
+      .comic-bg {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: radial-gradient(
+            circle at 20% 30%,
+            rgba(204, 0, 0, 0.1) 0%,
+            transparent 50%
+          ),
+          radial-gradient(
+            circle at 80% 70%,
+            rgba(204, 0, 0, 0.1) 0%,
+            transparent 50%
+          ),
+          linear-gradient(135deg, #1a1a1a 0%, #0a0a0a 100%);
+        z-index: -2;
+      }
+
+      .comic-grid {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background-image: repeating-linear-gradient(
+            0deg,
+            transparent,
+            transparent 2px,
+            rgba(204, 0, 0, 0.05) 2px,
+            rgba(204, 0, 0, 0.05) 4px
+          ),
+          repeating-linear-gradient(
+            90deg,
+            transparent,
+            transparent 2px,
+            rgba(204, 0, 0, 0.05) 2px,
+            rgba(204, 0, 0, 0.05) 4px
+          );
+        z-index: -1;
+      }
+
+      /* ===== HEADER ===== */
+      .comic-header {
+        background: rgba(20, 20, 20, 0.95);
+        border-bottom: 3px solid #cc0000;
+        padding: 1rem 2rem;
+        position: sticky;
+        top: 0;
+        z-index: 100;
+        backdrop-filter: blur(10px);
+      }
+
+      .header-content {
+        max-width: 1400px;
+        margin: 0 auto;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: 1rem;
+      }
+
+      .comic-title {
+        font-family: "Russo One", sans-serif;
+        font-size: 1.8rem;
+        color: #fff;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+      }
+
+      .comic-subtitle {
+        font-family: "Poppins", sans-serif;
+        font-size: 1rem;
+        color: #cc0000;
+        font-weight: 600;
+        margin-top: 0.2rem;
+      }
+
+      .chapter-info {
+        display: flex;
+        align-items: center;
+        gap: 1.5rem;
+      }
+
+      .current-chapter {
+        background: #cc0000;
+        padding: 0.5rem 1.2rem;
+        border-radius: 25px;
+        font-weight: 700;
+        font-size: 1rem;
+      }
+
+      .back-button {
+        background: #333;
+        color: white;
+        border: 2px solid #555;
+        padding: 0.7rem 1.5rem;
+        border-radius: 5px;
+        font-family: "Poppins", sans-serif;
+        font-weight: 600;
+        font-size: 1rem;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        text-decoration: none;
+        display: inline-block;
+      }
+
+      .back-button:hover {
+        background: #444;
+        border-color: #cc0000;
+        transform: translateY(-2px);
+      }
+
+      /* ===== CONTENEDOR PRINCIPAL ===== */
+      .viewer-container {
+        max-width: 1400px;
+        margin: 2rem auto;
+        padding: 0 1rem;
+        min-height: calc(100vh - 150px);
+        display: flex;
+        flex-direction: column;
+      }
+
+      /* ===== SWITCH DE ORIENTACIÓN ===== */
+      .orientation-controls {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 1rem;
+        margin: 1.5rem auto;
+        padding: 1rem;
+        background: rgba(30, 30, 30, 0.9);
+        border-radius: 15px;
+        border: 2px solid #333;
+        max-width: 500px;
+        width: 90%;
+      }
+
+      .control-label {
+        font-family: "Poppins", sans-serif;
+        font-weight: 600;
+        color: #ccc;
+        font-size: 1rem;
+      }
+
+      /* Estilos del Switch */
+      .switch {
+        position: relative;
+        display: inline-block;
+        width: 180px;
+        height: 60px;
+      }
+
+      .switch input {
+        opacity: 0;
+        width: 0;
+        height: 0;
+      }
+
+      .slider {
+        position: absolute;
+        cursor: pointer;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: linear-gradient(to right, #cc0000, #ff4444);
+        transition: 0.4s;
+        border-radius: 50px;
+        border: 3px solid #333;
+        box-shadow: 0 4px 15px rgba(204, 0, 0, 0.3);
+      }
+
+      .slider:before {
+        position: absolute;
+        content: "";
+        height: 48px;
+        width: 48px;
+        left: 4px;
+        bottom: 4px;
+        background-color: white;
+        transition: 0.4s;
+        border-radius: 50%;
+        box-shadow: 0 2px 5px rgba(0, 0, 0, 0.3);
+        z-index: 2;
+      }
+
+      input:checked + .slider {
+        background: linear-gradient(to right, #0066cc, #0099ff);
+        box-shadow: 0 4px 15px rgba(0, 102, 204, 0.3);
+      }
+
+      input:checked + .slider:before {
+        transform: translateX(120px);
+      }
+
+      /* Texto dentro del switch */
+      .slider .vertical-text,
+      .slider .horizontal-text {
+        position: absolute;
+        top: 50%;
+        transform: translateY(-50%);
+        font-family: "Poppins", sans-serif;
+        font-weight: 700;
+        font-size: 14px;
+        color: white;
+        text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.5);
+        transition: opacity 0.3s ease;
+        z-index: 1;
+      }
+
+      .slider .vertical-text {
+        left: 60px;
+        opacity: 1;
+      }
+
+      .slider .horizontal-text {
+        right: 50px;
+        opacity: 0;
+      }
+
+      input:checked + .slider .vertical-text {
+        opacity: 0;
+      }
+
+      input:checked + .slider .horizontal-text {
+        opacity: 1;
+      }
+
+      .orientation-info {
+        font-family: "Poppins", sans-serif;
+        font-weight: 600;
+        color: #cc0000;
+        font-size: 0.9rem;
+        margin-left: 0.5rem;
+      }
+
+      /* ===== ÁREA DEL CÓMIC ===== */
+      .comic-display-area {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        padding: 2rem 0;
+      }
+
+      .page-navigation {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 2rem;
+        margin-bottom: 1rem;
+        width: 100%;
+      }
+
+      .nav-button {
+        background: #cc0000;
+        color: white;
+        border: none;
+        width: 50px;
+        height: 50px;
+        border-radius: 50%;
+        font-size: 1.5rem;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        box-shadow: 0 5px 15px rgba(204, 0, 0, 0.3);
+      }
+
+      .nav-button:hover:not(:disabled) {
+        background: #ff0000;
+        transform: scale(1.1);
+        box-shadow: 0 8px 20px rgba(204, 0, 0, 0.5);
+      }
+
+      .nav-button:disabled {
+        background: #666;
+        cursor: not-allowed;
+        opacity: 0.5;
+      }
+
+      .page-counter {
+        font-family: "Bangers", cursive;
+        font-size: 1.8rem;
+        color: #fff;
+        letter-spacing: 2px;
+        background: rgba(0, 0, 0, 0.7);
+        padding: 0.5rem 1.5rem;
+        border-radius: 30px;
+        border: 2px solid #cc0000;
+      }
+
+      /* Contenedor de la página */
+      .page-container {
+        max-width: 900px;
+        width: 100%;
+        position: relative;
+        box-shadow: 0 15px 40px rgba(0, 0, 0, 0.8);
+        border-radius: 10px;
+        overflow: hidden;
+        border: 5px solid #222;
+        background: #000;
+        transition: all 0.3s ease;
+      }
+
+      /* Estilos para orientación */
+      .page-container.vertical {
+        max-width: 400px;
+        margin: 0 auto;
+      }
+
+      .page-container.horizontal {
+        max-width: 900px;
+        margin: 0 auto;
+      }
+
+      .comic-page {
+        width: 100%;
+        height: auto;
+        display: block;
+        transition: transform 0.3s ease;
+      }
+
+      .comic-page:hover {
+        transform: scale(1.005);
+      }
+
+      /* ===== CONTROLES ===== */
+      .controls-bar {
+        display: flex;
+        justify-content: center;
+        gap: 1.5rem;
+        margin-top: 2rem;
+        padding: 1rem;
+        background: rgba(30, 30, 30, 0.9);
+        border-radius: 15px;
+        border: 2px solid #333;
+        flex-wrap: wrap;
+      }
+
+      .control-button {
+        background: #333;
+        color: white;
+        border: 2px solid #555;
+        padding: 0.8rem 1.5rem;
+        border-radius: 8px;
+        font-family: "Poppins", sans-serif;
+        font-weight: 600;
+        font-size: 1rem;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+      }
+
+      .control-button:hover {
+        background: #444;
+        border-color: #cc0000;
+        transform: translateY(-2px);
+      }
+
+      /* Zoom controls */
+      .zoom-controls {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        background: #222;
+        padding: 0.5rem 1rem;
+        border-radius: 25px;
+      }
+
+      .zoom-button {
+        background: #444;
+        color: white;
+        border: none;
+        width: 35px;
+        height: 35px;
+        border-radius: 50%;
+        cursor: pointer;
+        font-size: 1.2rem;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+
+      .zoom-button:hover {
+        background: #555;
+      }
+
+      .zoom-level {
+        font-family: "Poppins", sans-serif;
+        font-weight: 600;
+        color: #fff;
+        min-width: 60px;
+        text-align: center;
+      }
+
+      /* ===== INFO DEL CÓMIC ===== */
+      .comic-info-panel {
+        max-width: 900px;
+        margin: 2rem auto;
+        background: rgba(30, 30, 30, 0.9);
+        border-radius: 15px;
+        padding: 2rem;
+        border: 2px solid #333;
+      }
+
+      .info-title {
+        font-family: "Russo One", sans-serif;
+        font-size: 1.8rem;
+        color: #fff;
+        margin-bottom: 1rem;
+        text-align: center;
+      }
+
+      .comic-description {
+        font-family: "Poppins", sans-serif;
+        font-size: 1.1rem;
+        line-height: 1.6;
+        color: #ccc;
+        text-align: center;
+        margin-bottom: 1.5rem;
+      }
+
+      .comic-details {
+        display: flex;
+        justify-content: center;
+        gap: 2rem;
+        flex-wrap: wrap;
+        margin-top: 1.5rem;
+      }
+
+      .detail-item {
+        text-align: center;
+      }
+
+      .detail-label {
+        font-family: "Poppins", sans-serif;
+        font-size: 0.9rem;
+        color: #999;
+        margin-bottom: 0.3rem;
+      }
+
+      .detail-value {
+        font-family: "Poppins", sans-serif;
+        font-size: 1.1rem;
+        color: #fff;
+        font-weight: 600;
+      }
+
+      /* ===== CAPÍTULOS ===== */
+      .chapters-panel {
+        max-width: 900px;
+        margin: 2rem auto;
+        background: rgba(30, 30, 30, 0.9);
+        border-radius: 15px;
+        padding: 2rem;
+        border: 2px solid #333;
+      }
+
+      .chapters-title {
+        font-family: "Russo One", sans-serif;
+        font-size: 1.8rem;
+        color: #fff;
+        margin-bottom: 1.5rem;
+        text-align: center;
+      }
+
+      .chapters-list {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+        gap: 1rem;
+      }
+
+      .chapter-item {
+        background: #222;
+        padding: 1rem;
+        border-radius: 10px;
+        text-align: center;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        border: 2px solid #333;
+      }
+
+      .chapter-item:hover {
+        background: #333;
+        border-color: #cc0000;
+        transform: translateY(-3px);
+      }
+
+      .chapter-item.active {
+        background: #cc0000;
+        border-color: #cc0000;
+      }
+
+      .chapter-number {
+        font-family: "Bangers", cursive;
+        font-size: 1.5rem;
+        color: #fff;
+        margin-bottom: 0.5rem;
+        letter-spacing: 1px;
+      }
+
+      .chapter-name {
+        font-family: "Poppins", sans-serif;
+        font-size: 0.9rem;
+        color: #ccc;
+      }
+
+      /* ===== FOOTER ===== */
+      .comic-footer {
+        background: rgba(20, 20, 20, 0.95);
+        border-top: 3px solid #cc0000;
+        padding: 2rem 1rem;
+        margin-top: 3rem;
+      }
+
+      .footer-content {
+        max-width: 1400px;
+        margin: 0 auto;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: 1.5rem;
+      }
+
+      .footer-logo {
+        font-family: "Russo One", sans-serif;
+        font-size: 1.5rem;
+        color: #cc0000;
+      }
+
+      .footer-nav {
+        display: flex;
+        gap: 1.5rem;
+      }
+
+      .footer-nav a {
+        color: #ccc;
+        text-decoration: none;
+        font-family: "Poppins", sans-serif;
+        font-weight: 600;
+        transition: color 0.3s ease;
+      }
+
+      .footer-nav a:hover {
+        color: #cc0000;
+      }
+
+      /* ===== CANVA ===== */
+      .canva-frame {
+        width: 100%;
+        height: 600px;
+        border: none;
+        border-radius: 10px;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+      }
+
+      .canva-info {
+        text-align: center;
+        margin-top: 1rem;
+        color: #999;
+        font-size: 0.9rem;
+      }
+
+      /* ===== LOADING ===== */
+      .loading-indicator {
+        display: none;
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.9);
+        z-index: 2000;
+        justify-content: center;
+        align-items: center;
+        flex-direction: column;
+      }
+
+      .loading-spinner {
+        width: 50px;
+        height: 50px;
+        border: 5px solid #333;
+        border-top: 5px solid #cc0000;
+        border-radius: 50%;
+        animation: spin 1s linear infinite;
+        margin-bottom: 1rem;
+      }
+
+      @keyframes spin {
+        0% {
+          transform: rotate(0deg);
+        }
+        100% {
+          transform: rotate(360deg);
+        }
+      }
+
+      .loading-text {
+        font-family: "Poppins", sans-serif;
+        font-size: 1.2rem;
+        color: #fff;
+      }
+
+      /* ===== NOTIFICACIONES ===== */
+      .notification {
+        position: fixed;
+        top: 100px;
+        right: 20px;
+        background: rgba(30, 30, 30, 0.95);
+        color: white;
+        padding: 1rem 1.5rem;
+        border-radius: 10px;
+        border-left: 4px solid #cc0000;
+        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.5);
+        z-index: 1000;
+        font-family: "Poppins", sans-serif;
+        font-weight: 600;
+        max-width: 300px;
+        animation: slideIn 0.3s ease;
+      }
+
+      @keyframes slideIn {
+        from {
+          transform: translateX(100%);
+          opacity: 0;
+        }
+        to {
+          transform: translateX(0);
+          opacity: 1;
+        }
+      }
+
+      @keyframes slideOut {
+        from {
+          transform: translateX(0);
+          opacity: 1;
+        }
+        to {
+          transform: translateX(100%);
+          opacity: 0;
+        }
+      }
+
+      /* ===== RESPONSIVE ===== */
+      @media (max-width: 768px) {
+        .header-content {
+          flex-direction: column;
+          text-align: center;
+        }
+
+        .chapter-info {
+          justify-content: center;
+        }
+
+        .page-counter {
+          font-size: 1.4rem;
+        }
+
+        .controls-bar {
+          flex-direction: column;
+          align-items: center;
+        }
+
+        .control-group {
+          display: flex;
+          flex-wrap: wrap;
+          justify-content: center;
+          gap: 0.5rem;
+        }
+
+        .comic-page {
+          max-height: 80vh;
+          object-fit: contain;
+        }
+
+        .orientation-controls {
+          flex-direction: column;
+          gap: 0.8rem;
+          padding: 0.8rem;
+        }
+
+        .page-container.vertical {
+          max-width: 95%;
+        }
+
+        .page-container.horizontal {
+          max-width: 95%;
+        }
+
+        .switch {
+          width: 150px;
+          height: 50px;
+        }
+
+        .slider:before {
+          height: 40px;
+          width: 40px;
+          left: 3px;
+          bottom: 3px;
+        }
+
+        input:checked + .slider:before {
+          transform: translateX(100px);
+        }
+
+        .slider .vertical-text,
+        .slider .horizontal-text {
+          font-size: 12px;
+        }
+
+        .slider .vertical-text {
+          left: 50px;
+        }
+
+        .slider .horizontal-text {
+          right: 40px;
+        }
+      }
+
+      @media (max-width: 480px) {
+        .comic-title {
+          font-size: 1.4rem;
+        }
+
+        .page-counter {
+          font-size: 1.2rem;
+          padding: 0.3rem 1rem;
+        }
+
+        .nav-button {
+          width: 40px;
+          height: 40px;
+          font-size: 1.2rem;
+        }
+
+        .comic-info-panel,
+        .chapters-panel {
+          padding: 1.5rem;
+        }
+
+        .control-button {
+          padding: 0.6rem 1rem;
+          font-size: 0.9rem;
+        }
+
+        .orientation-controls {
+          width: 95%;
+          padding: 0.6rem;
+        }
+
+        .control-label {
+          font-size: 0.9rem;
+        }
+
+        .orientation-info {
+          font-size: 0.8rem;
+        }
+
+        .switch {
+          width: 130px;
+          height: 45px;
+        }
+
+        .slider:before {
+          height: 35px;
+          width: 35px;
+        }
+
+        input:checked + .slider:before {
+          transform: translateX(85px);
+        }
+
+        .slider .vertical-text,
+        .slider .horizontal-text {
+          font-size: 11px;
+        }
+
+        .slider .vertical-text {
+          left: 45px;
+        }
+
+        .slider .horizontal-text {
+          right: 35px;
+        }
+      }
+
+      /* ===== PANTALLA COMPLETA ===== */
+      body:fullscreen .page-container {
+        max-width: 95vw;
+        max-height: 85vh;
+      }
+
+      body:fullscreen .comic-page {
+        max-height: 85vh;
+        object-fit: contain;
+      }
+    </style>
+  </head>
+  <body>
+    <!-- Fondo -->
+    <div class="comic-bg"></div>
+    <div class="comic-grid"></div>
+
+    <!-- Loading -->
+    <div class="loading-indicator" id="loadingIndicator">
+      <div class="loading-spinner"></div>
+      <div class="loading-text">Cargando cómic...</div>
+    </div>
+
+    <!-- Header -->
+    <header class="comic-header">
+      <div class="header-content">
+        <div class="comic-metadata">
+          <h1 class="comic-title">EL ESPADA NEGRA</h1>
+          <p class="comic-subtitle">Dark Fantasy • Capítulo 1: El Despertar</p>
+        </div>
+        <div class="chapter-info">
+          <div class="current-chapter">Capítulo 1</div>
+          <a href="index.html" class="back-button">← Volver al Inicio</a>
+        </div>
+      </div>
+    </header>
+
+    <!-- Contenido principal -->
+    <main class="viewer-container">
+      <!-- Navegación -->
+      <div class="page-navigation">
+        <button class="nav-button" id="prevPage">‹</button>
+        <div class="page-counter">
+          <span id="currentPage">1</span> / <span id="totalPages">12</span>
+        </div>
+        <button class="nav-button" id="nextPage">›</button>
+      </div>
+
+      <!-- Switch de orientación -->
+      <div class="orientation-controls">
+        <div class="control-label">Orientación:</div>
+        <label class="switch">
+          <input type="checkbox" id="orientationSwitch" />
+          <span class="slider">
+            <span class="vertical-text">Vertical</span>
+            <span class="horizontal-text">Horizontal</span>
+          </span>
+        </label>
+        <div class="orientation-info">
+          <span id="currentOrientation">Vertical (Celular)</span>
+        </div>
+      </div>
+
+      <!-- Área del cómic -->
+      <div class="comic-display-area">
+        <div class="page-container" id="pageContainer">
+          <img
+            src="el espada negra vertical.png"
+            alt="Página del cómic"
+            class="comic-page"
+            id="comicPage"
+          />
+
+          <!-- Canva -->
+          <div id="canvaContainer" style="display: none">
+            <iframe
+              class="canva-frame"
+              id="canvaFrame"
+              allowfullscreen
+            ></iframe>
+            <p class="canva-info">Cómic creado en Canva</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Controles -->
+      <div class="controls-bar">
+        <div class="control-group">
+          <button class="control-button" id="fullscreenBtn">
+            <span>📺</span> Pantalla Completa
+          </button>
+          <div class="zoom-controls">
+            <button class="zoom-button" id="zoomOut">−</button>
+            <span class="zoom-level" id="zoomLevel">100%</span>
+            <button class="zoom-button" id="zoomIn">+</button>
+          </div>
+          <button class="control-button" id="canvaBtn">
+            <span>🎨</span> Ver en Canva
+          </button>
+        </div>
+        <div class="control-group">
+          <button class="control-button" id="firstPageBtn">
+            <span>⏮</span> Primera
+          </button>
+          <button class="control-button" id="lastPageBtn">
+            <span>⏭</span> Última
+          </button>
+          <button class="control-button" id="autoScrollBtn">
+            <span>🔁</span> Auto-Scroll
+          </button>
+        </div>
+      </div>
+
+      <!-- Info del cómic -->
+      <div class="comic-info-panel">
+        <h2 class="info-title">Descripción</h2>
+        <p class="comic-description">
+          Cuenta el origen de Gorv, un joven que, tras perder a su madre en la
+          destrucción de su aldea, queda marcado por una herida emocional
+          irreversible. Empujado por la culpa y la rabia, recorre un camino de
+          violencia, entrenamiento y combates sangrientos bajo su propio código
+          moral, hasta convertirse en el Espada Negra, una figura oscura nacida
+          del dolor, cuya leyenda apenas comienza.
+        </p>
+        <div class="comic-details">
+          <div class="detail-item">
+            <div class="detail-label">GÉNERO</div>
+            <div class="detail-value">Dark Fantasy</div>
+          </div>
+          <div class="detail-item">
+            <div class="detail-label">AUTOR</div>
+            <div class="detail-value">Omar M.</div>
+          </div>
+          <div class="detail-item">
+            <div class="detail-label">ESTADO</div>
+            <div class="detail-value">Listo</div>
+          </div>
+          <div class="detail-item">
+            <div class="detail-label">PUBLICACIÓN</div>
+            <div class="detail-value">2026</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Capítulos -->
+      <div class="chapters-panel">
+        <h2 class="chapters-title">Capítulos</h2>
+        <div class="chapters-list">
+          <div class="chapter-item active">
+            <div class="chapter-number">Capítulo 1</div>
+            <div class="chapter-name">El Despertar</div>
+            <div style="font-size: 0.8rem; color: #999; margin-top: 0.3rem">
+              12 páginas
+            </div>
+          </div>
+        </div>
+      </div>
+    </main>
+
+    <!-- Footer -->
+    <footer class="comic-footer">
+      <div class="footer-content">
+        <div class="footer-logo">HistoComic Viewer</div>
+        <div class="footer-nav">
+          <a href="index.html">Inicio</a>
+          <a href="#comics">Más Cómics</a>
+          <a href="#autores">Autores</a>
+          <a href="#contacto">Contacto</a>
+        </div>
+      </div>
+    </footer>
+
+    <script>
+      // ===== VARIABLES GLOBALES =====
+      let currentPage = 1;
+      const totalPages = 12;
+      let zoomLevel = 1;
+      let autoScrollInterval = null;
+      let canvaMode = false;
+
+      // ===== DATOS DE PÁGINAS =====
+      const pages = Array.from(
+        { length: 12 },
+        (_, i) =>
+          `https://via.placeholder.com/900x1350/1a1a1a/cc0000?text=PÁGINA+${
+            i + 1
+          }+ESPADA+NEGRA`
+      );
+
+      // ===== FUNCIONES UTILITARIAS =====
+      function showNotification(message, type = "info") {
+        const notification = document.createElement("div");
+        notification.className = "notification";
+        notification.textContent = message;
+        notification.style.borderLeftColor =
+          type === "info" ? "#cc0000" : "#0066cc";
+
+        document.body.appendChild(notification);
+
+        setTimeout(() => {
+          notification.style.animation = "slideOut 0.3s ease";
+          setTimeout(() => notification.remove(), 300);
+        }, 3000);
+      }
+
+      function showLoading(show) {
+        document.getElementById("loadingIndicator").style.display = show
+          ? "flex"
+          : "none";
+      }
+
+      // ===== SWITCH DE ORIENTACIÓN =====
+      document
+        .getElementById("orientationSwitch")
+        .addEventListener("change", function () {
+          const pageContainer = document.getElementById("pageContainer");
+          const comicPage = document.getElementById("comicPage");
+          const orientationText = document.getElementById("currentOrientation");
+
+          if (this.checked) {
+            // Horizontal (PC)
+            pageContainer.classList.remove("vertical");
+            pageContainer.classList.add("horizontal");
+            comicPage.src = "el espada negra horizontal.png";
+            orientationText.textContent = "Horizontal (PC)";
+            localStorage.setItem("comic-orientation", "horizontal");
+            showNotification("Orientación cambiada a Horizontal", "info");
+          } else {
+            // Vertical (Celular)
+            pageContainer.classList.remove("horizontal");
+            pageContainer.classList.add("vertical");
+            comicPage.src = "el espada negra vertical.png";
+            orientationText.textContent = "Vertical (Celular)";
+            localStorage.setItem("comic-orientation", "vertical");
+            showNotification("Orientación cambiada a Vertical", "info");
+          }
+        });
+
+      // Cargar orientación guardada
+      const savedOrientation = localStorage.getItem("comic-orientation");
+      if (savedOrientation === "horizontal") {
+        document.getElementById("orientationSwitch").checked = true;
+        document
+          .getElementById("orientationSwitch")
+          .dispatchEvent(new Event("change"));
+      }
+
+      // ===== NAVEGACIÓN DE PÁGINAS =====
+      function loadPage(pageNumber) {
+        if (pageNumber < 1 || pageNumber > totalPages) return;
+
+        currentPage = pageNumber;
+        showLoading(true);
+
+        if (!canvaMode) {
+          const comicPage = document.getElementById("comicPage");
+          comicPage.src = pages[pageNumber - 1];
+
+          setTimeout(() => {
+            showLoading(false);
+            updateDisplay();
+            saveProgress();
+          }, 300);
+        }
+      }
+
+      function changePage(delta) {
+        loadPage(currentPage + delta);
+      }
+
+      function firstPage() {
+        loadPage(1);
+      }
+
+      function lastPage() {
+        loadPage(totalPages);
+      }
+
+      function updateDisplay() {
+        document.getElementById("currentPage").textContent = currentPage;
+        document.getElementById("prevPage").disabled = currentPage <= 1;
+        document.getElementById("nextPage").disabled =
+          currentPage >= totalPages;
+
+        if (!canvaMode) {
+          const comicPage = document.getElementById("comicPage");
+          comicPage.style.transform = `scale(${zoomLevel})`;
+          document.getElementById("zoomLevel").textContent = `${Math.round(
+            zoomLevel * 100
+          )}%`;
+        }
+      }
+
+      // ===== ZOOM =====
+      function changeZoom(delta) {
+        if (canvaMode) return;
+
+        zoomLevel += delta;
+        if (zoomLevel < 0.3) zoomLevel = 0.3;
+        if (zoomLevel > 3) zoomLevel = 3;
+
+        updateDisplay();
+      }
+
+      // ===== PANTALLA COMPLETA =====
+      function toggleFullscreen() {
+        if (!document.fullscreenElement) {
+          document.documentElement.requestFullscreen().catch((err) => {
+            console.log("Error al activar pantalla completa:", err);
+          });
+        } else {
+          document.exitFullscreen();
+        }
+      }
+
+      // ===== AUTO-SCROLL =====
+      function toggleAutoScroll() {
+        const button = document.getElementById("autoScrollBtn");
+
+        if (autoScrollInterval) {
+          clearInterval(autoScrollInterval);
+          autoScrollInterval = null;
+          button.innerHTML = "<span>🔁</span> Auto-Scroll";
+          showNotification("Auto-scroll desactivado", "info");
+        } else {
+          autoScrollInterval = setInterval(() => {
+            if (currentPage < totalPages) {
+              changePage(1);
+            } else {
+              toggleAutoScroll();
+            }
+          }, 5000);
+          button.innerHTML = "<span>⏸️</span> Pausar Scroll";
+          showNotification("Auto-scroll activado (cada 5 segundos)", "info");
+        }
+      }
+
+      // ===== CANVA =====
+      function loadCanvaComic() {
+        const canvaContainer = document.getElementById("canvaContainer");
+        const comicPage = document.getElementById("comicPage");
+        const canvaBtn = document.getElementById("canvaBtn");
+
+        if (!canvaMode) {
+          // Activar modo Canva
+          canvaMode = true;
+          comicPage.style.display = "none";
+          canvaContainer.style.display = "block";
+          canvaBtn.innerHTML = "<span>📖</span> Ver Páginas";
+
+          // URL de ejemplo para Canva - REEMPLAZA CON TU ID REAL
+          const canvaDesignId = "DAF-EXAMPLE123456";
+          const canvaUrl = `https://www.canva.com/design/${canvaDesignId}/view?embed`;
+          document.getElementById("canvaFrame").src = canvaUrl;
+
+          showNotification(
+            "Modo Canva activado. El cómic se muestra desde Canva.",
+            "info"
+          );
+        } else {
+          // Desactivar modo Canva
+          canvaMode = false;
+          comicPage.style.display = "block";
+          canvaContainer.style.display = "none";
+          canvaBtn.innerHTML = "<span>🎨</span> Ver en Canva";
+          document.getElementById("canvaFrame").src = "";
+
+          showNotification("Modo páginas activado", "info");
+        }
+      }
+
+      // ===== PROGRESO GUARDADO =====
+      function saveProgress() {
+        localStorage.setItem(
+          "espada-negra-progress",
+          JSON.stringify({
+            page: currentPage,
+            timestamp: new Date().toISOString(),
+          })
+        );
+      }
+
+      function loadProgress() {
+        const saved = localStorage.getItem("espada-negra-progress");
+        if (saved) {
+          const progress = JSON.parse(saved);
+          if (progress.page) {
+            currentPage = progress.page;
+            return true;
+          }
+        }
+        return false;
+      }
+
+      // ===== EVENTOS DE TECLADO =====
+      document.addEventListener("keydown", function (event) {
+        if (event.key === "ArrowLeft") changePage(-1);
+        if (event.key === "ArrowRight") changePage(1);
+        if (event.key === "Home") firstPage();
+        if (event.key === "End") lastPage();
+        if (event.key === "+" || event.key === "=") {
+          if (event.ctrlKey) changeZoom(0.1);
+        }
+        if (event.key === "-") {
+          if (event.ctrlKey) changeZoom(-0.1);
+        }
+        if (event.key === "0" && event.ctrlKey) {
+          zoomLevel = 1;
+          updateDisplay();
+        }
+        if (event.key === "f" || event.key === "F") {
+          if (event.ctrlKey) toggleFullscreen();
+        }
+        if (event.key === " ") {
+          event.preventDefault();
+          toggleAutoScroll();
+        }
+      });
+
+      // ===== EVENT LISTENERS =====
+      document
+        .getElementById("prevPage")
+        .addEventListener("click", () => changePage(-1));
+      document
+        .getElementById("nextPage")
+        .addEventListener("click", () => changePage(1));
+      document
+        .getElementById("firstPageBtn")
+        .addEventListener("click", firstPage);
+      document
+        .getElementById("lastPageBtn")
+        .addEventListener("click", lastPage);
+      document
+        .getElementById("fullscreenBtn")
+        .addEventListener("click", toggleFullscreen);
+      document
+        .getElementById("zoomIn")
+        .addEventListener("click", () => changeZoom(0.1));
+      document
+        .getElementById("zoomOut")
+        .addEventListener("click", () => changeZoom(-0.1));
+      document
+        .getElementById("autoScrollBtn")
+        .addEventListener("click", toggleAutoScroll);
+      document
+        .getElementById("canvaBtn")
+        .addEventListener("click", loadCanvaComic);
+
+      // ===== INICIALIZACIÓN =====
+      document.addEventListener("DOMContentLoaded", function () {
+        if (!loadProgress()) {
+          currentPage = 1;
+        }
+        loadPage(currentPage);
+
+        // Mostrar número de páginas
+        document.getElementById("totalPages").textContent = totalPages;
+
+        console.log("Visor de cómics cargado. Página:", currentPage);
+      });
+    </script>
+  </body>
+</html>

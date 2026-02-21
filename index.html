@@ -1,0 +1,885 @@
+<!DOCTYPE html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>HistoComic | Historias dibujadas y escritas</title>
+    <link
+      href="https://fonts.googleapis.com/css2?family=Bangers&family=Poppins:wght@300;400;600;700&family=Russo+One&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="styles.css" />
+    <style>
+      /* Estilos adicionales para el modal y orientación */
+      .confirmation-modal {
+        display: none;
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background-color: rgba(0, 0, 0, 0.9);
+        z-index: 9999;
+        justify-content: center;
+        align-items: center;
+        animation: fadeIn 0.3s ease;
+      }
+
+      @keyframes fadeIn {
+        from {
+          opacity: 0;
+        }
+        to {
+          opacity: 1;
+        }
+      }
+
+      .modal-content {
+        background-color: #1a1a1a;
+        border-radius: 15px;
+        padding: 40px 30px;
+        max-width: 500px;
+        width: 90%;
+        text-align: center;
+        border: 3px solid #cc0000;
+        box-shadow: 0 10px 40px rgba(204, 0, 0, 0.4);
+        transform: scale(0.9);
+        animation: modalAppear 0.3s ease forwards;
+      }
+
+      @keyframes modalAppear {
+        from {
+          transform: scale(0.9);
+        }
+        to {
+          transform: scale(1);
+        }
+      }
+
+      .modal-title {
+        font-family: "Russo One", sans-serif;
+        font-size: 2rem;
+        color: #fff;
+        margin-bottom: 15px;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+      }
+
+      .modal-message {
+        font-family: "Poppins", sans-serif;
+        font-size: 1.2rem;
+        color: #ccc;
+        line-height: 1.6;
+        margin-bottom: 30px;
+        padding: 0 10px;
+      }
+
+      .modal-buttons {
+        display: flex;
+        justify-content: center;
+        gap: 20px;
+        flex-wrap: wrap;
+      }
+
+      .modal-button {
+        padding: 14px 30px;
+        border: none;
+        border-radius: 8px;
+        font-family: "Poppins", sans-serif;
+        font-weight: 700;
+        font-size: 1.1rem;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        min-width: 140px;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+      }
+
+      .modal-confirm {
+        background-color: #cc0000;
+        color: white;
+        box-shadow: 0 5px 15px rgba(204, 0, 0, 0.3);
+      }
+
+      .modal-confirm:hover {
+        background-color: #ff0000;
+        transform: translateY(-3px);
+        box-shadow: 0 8px 20px rgba(204, 0, 0, 0.5);
+      }
+
+      .modal-cancel {
+        background-color: #333;
+        color: white;
+        border: 2px solid #555;
+      }
+
+      .modal-cancel:hover {
+        background-color: #444;
+        transform: translateY(-3px);
+        box-shadow: 0 5px 15px rgba(255, 255, 255, 0.1);
+      }
+
+      /* Estilos para orientación */
+      .vertical-mode .main-content {
+        max-width: 800px !important;
+      }
+
+      .vertical-mode .comics-grid {
+        grid-template-columns: 1fr !important;
+        gap: 2rem;
+      }
+
+      .vertical-mode .featured-content {
+        flex-direction: column !important;
+      }
+
+      .vertical-mode .carousel-image {
+        height: 400px !important;
+      }
+
+      .horizontal-mode .comics-grid {
+        grid-template-columns: repeat(3, 1fr) !important;
+      }
+
+      .horizontal-mode .carousel-image {
+        height: 600px !important;
+      }
+
+      /* Estilos del switch mejorados */
+      .device-switcher {
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        z-index: 1000;
+        background-color: rgba(20, 20, 20, 0.95);
+        border-radius: 50px;
+        padding: 12px 20px;
+        box-shadow: 0 8px 25px rgba(0, 0, 0, 0.6);
+        border: 2px solid #cc0000;
+        backdrop-filter: blur(10px);
+        display: flex;
+        align-items: center;
+        gap: 15px;
+        transition: all 0.3s ease;
+      }
+
+      .device-switcher:hover {
+        box-shadow: 0 12px 30px rgba(204, 0, 0, 0.3);
+        transform: translateY(-2px);
+      }
+
+      .switch-wrapper {
+        display: flex;
+        align-items: center;
+        gap: 15px;
+      }
+
+      #deviceSwitch {
+        display: none;
+      }
+
+      .switch {
+        position: relative;
+        display: inline-block;
+        width: 70px;
+        height: 36px;
+        cursor: pointer;
+      }
+
+      .slider {
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background-color: #222;
+        border-radius: 36px;
+        transition: 0.4s;
+        border: 2px solid #cc0000;
+        box-shadow: inset 0 2px 10px rgba(0, 0, 0, 0.5);
+      }
+
+      .slider-ball {
+        position: absolute;
+        height: 28px;
+        width: 28px;
+        left: 4px;
+        bottom: 2px;
+        background: linear-gradient(135deg, #cc0000, #ff3333);
+        border-radius: 50%;
+        transition: 0.4s;
+        box-shadow: 0 3px 8px rgba(0, 0, 0, 0.4);
+      }
+
+      #deviceSwitch:checked + .switch-wrapper .slider-ball {
+        transform: translateX(34px);
+        background: linear-gradient(135deg, #fff, #ddd);
+      }
+
+      .switch-icons {
+        display: flex;
+        gap: 12px;
+        font-size: 22px;
+      }
+
+      .device-icon {
+        opacity: 0.4;
+        transition: all 0.3s ease;
+        filter: grayscale(1);
+      }
+
+      .device-icon.active {
+        opacity: 1;
+        filter: grayscale(0);
+        transform: scale(1.2);
+      }
+
+      .mode-text {
+        font-family: "Poppins", sans-serif;
+        font-size: 14px;
+        font-weight: 700;
+        color: #fff;
+        min-width: 140px;
+        text-align: center;
+        letter-spacing: 0.5px;
+        background-color: rgba(204, 0, 0, 0.2);
+        padding: 6px 12px;
+        border-radius: 20px;
+        border: 1px solid rgba(204, 0, 0, 0.3);
+      }
+
+      /* Indicador de estado */
+      .status-indicator {
+        width: 10px;
+        height: 10px;
+        border-radius: 50%;
+        background-color: #00cc00;
+        box-shadow: 0 0 10px #00cc00;
+        animation: pulse 2s infinite;
+      }
+
+      @keyframes pulse {
+        0% {
+          opacity: 1;
+        }
+        50% {
+          opacity: 0.5;
+        }
+        100% {
+          opacity: 1;
+        }
+      }
+
+      .horizontal-mode .status-indicator {
+        background-color: #cc0000;
+        box-shadow: 0 0 10px #cc0000;
+      }
+
+      /* Estilos para botones con enlace */
+      .read-button-link {
+        display: inline-block;
+        background-color: #cc0000;
+        color: #fff;
+        font-family: "Poppins", sans-serif;
+        font-weight: 600;
+        font-size: 1rem;
+        padding: 0.8rem 1.5rem;
+        border: none;
+        border-radius: 5px;
+        cursor: pointer;
+        transition: background-color 0.3s ease, transform 0.3s ease;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+        text-decoration: none;
+        text-align: center;
+      }
+
+      .read-button-link:hover {
+        background-color: #990000;
+        transform: scale(1.05);
+        color: white;
+        text-decoration: none;
+      }
+    </style>
+  </head>
+
+  <body>
+    <!-- MODAL DE CONFIRMACIÓN -->
+    <div class="confirmation-modal" id="orientationModal">
+      <div class="modal-content">
+        <h2 class="modal-title" id="modalTitle">CONFIRMAR CAMBIO</h2>
+        <p class="modal-message" id="modalMessage">
+          ¿Estás seguro de cambiar el modo de visualización?
+        </p>
+        <div class="modal-buttons">
+          <button class="modal-button modal-confirm" id="confirmButton">
+            SÍ, CAMBIAR
+          </button>
+          <button class="modal-button modal-cancel" id="cancelButton">
+            CANCELAR
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- SWITCH ANIMADO -->
+    <div class="device-switcher">
+      <input type="checkbox" id="deviceSwitch" />
+      <div class="switch-wrapper">
+        <label for="deviceSwitch" class="switch">
+          <span class="slider">
+            <span class="slider-ball"></span>
+          </span>
+        </label>
+        <div class="switch-icons">
+          <span class="device-icon mobile-icon active">📱</span>
+          <span class="device-icon pc-icon">🖥️</span>
+        </div>
+        <span class="mode-text" id="modeText">Modo Vertical</span>
+        <div class="status-indicator"></div>
+      </div>
+    </div>
+
+    <!-- FONDOS ESTILO CÓMIC -->
+    <div class="comic-background"></div>
+    <div class="comic-lines"></div>
+    <div class="comic-rays"></div>
+
+    <!-- HEADER HERO -->
+    <header class="hero-header">
+      <div class="histocomic-banner">
+        <h1 class="histocomic-title">HistoComic</h1>
+        <p class="tagline">Historias dibujadas y escritas</p>
+        <p class="genre-tags">Dark Fantasy • Sci-Fi • Terror • Drama</p>
+      </div>
+    </header>
+
+    <!-- NAVEGACIÓN -->
+    <nav class="main-nav">
+      <div class="nav-container">
+        <div class="nav-links">
+          <a href="#comics">Cómics</a>
+          <a href="#historias">Relatos</a>
+          <a href="#autores">Autores</a>
+        </div>
+      </div>
+    </nav>
+
+    <!-- CARRUSEL -->
+    <h2 class="section-title" id="comics">PODRÍA INTERESARTE</h2>
+    <div class="hero-carousel">
+      <div class="carousel-track">
+        <!-- SLIDE 1 - EL ESPADA NEGRA -->
+        <div class="carousel-slide">
+          <div class="carousel-image">
+            <img
+              src="el espada negra.png"
+              class="carousel-image-img"
+              alt="El Espada Negra"
+            />
+          </div>
+          <div class="carousel-overlay">
+            <h3 class="carousel-title">EL ESPADA NEGRA</h3>
+            <p class="carousel-subtitle">Dark Fantasy • 9 Capítulos</p>
+          </div>
+        </div>
+
+        <!-- SLIDE 2 - LOS "N" -->
+        <div class="carousel-slide">
+          <div class="carousel-image">
+            <img
+              src="Los N portada.png"
+              class="carousel-image-img"
+              alt="Los N"
+            />
+          </div>
+          <div class="carousel-overlay">
+            <h3 class="carousel-title">LOS "N"</h3>
+            <p class="carousel-subtitle">Thriller • Suspenso • Horror</p>
+          </div>
+        </div>
+
+        <!-- SLIDE 3 - EL CAZA FORTUNAS -->
+        <div class="carousel-slide">
+          <div class="carousel-image">
+            <img
+              src="kahim r+o.png"
+              class="carousel-image-img"
+              alt="El Caza Fortunas en Nepal"
+            />
+          </div>
+          <div class="carousel-overlay">
+            <h3 class="carousel-title">la isla kyham-Rö</h3>
+            <p class="carousel-subtitle">Ciencia Ficción • Acción • Libertad</p>
+          </div>
+        </div>
+      </div>
+      <div class="carousel-indicators">
+        <div class="indicator active" data-slide="0"></div>
+        <div class="indicator" data-slide="1"></div>
+        <div class="indicator" data-slide="2"></div>
+      </div>
+    </div>
+
+    <!-- CONTENIDO PRINCIPAL -->
+    <main class="main-content">
+      <!-- SECCIÓN DESTACADA -->
+      <section class="featured-section">
+        <div class="featured-content">
+          <div class="featured-image">
+            <img
+              src="https://via.placeholder.com/600x400/cc0000/000000?text=LUNA+DE+CENIZAS"
+              class="featured-image-img"
+              alt="Luna de Cenizas"
+            />
+          </div>
+          <div class="featured-text">
+            <h2 class="featured-title">LUNA DE CENIZAS</h2>
+            <p class="featured-description">
+              En un mundo donde la magia se alimenta de recuerdos, una cazadora
+              de sombras debe enfrentar su pasado para salvar lo último que le
+              queda.
+            </p>
+            <div class="featured-genres">
+              <span class="comic-genre">Dark Fantasy</span>
+              <span class="comic-genre secondary">18+ Capítulos</span>
+              <span class="comic-genre white">Acción</span>
+            </div>
+            <a
+              href="comic-viewer.html?comic=luna-cenizas&page=1"
+              class="comic-button featured-button"
+            >
+              Leer Capítulo 1
+            </a>
+          </div>
+        </div>
+      </section>
+
+      <!-- SECCIÓN DE CÓMICS -->
+      <div class="content-section">
+        <h2 class="section-title">Cómics</h2>
+        <div class="comics-grid">
+          <!-- CÓMIC 1 - EL ESPADA NEGRA -->
+          <div class="comic-card">
+            <div class="comic-cover">
+              <img
+                src="el espada negra vertical.png"
+                class="comic-cover-img"
+                alt="El espada negra"
+              />
+            </div>
+            <div class="comic-info">
+              <h3 class="comic-title">El espada negra</h3>
+              <span class="comic-genre">Dark fantasy</span>
+              <p class="comic-desc">
+                La pérdida de su madre y su aldea marca a Gorv con un dolor
+                profundo. Guiado por la culpa y la ira, se endurece en un camino
+                de violencia y combate, forjando su propio código moral. Así
+                nace el Espada Negra, una leyenda oscura.
+              </p>
+              <!-- HIPERVÍNCULO AQUÍ -->
+              <a href="comic_viewer1.html" class="read-button-link"
+                >Leer Ahora</a
+              >
+            </div>
+          </div>
+
+          <!-- CÓMIC 2 - NÉMESIS ESTELAR -->
+          <div class="comic-card">
+            <div class="comic-cover">
+              <img
+                src="la isla kyam ro vertical.png"
+                width="325"
+                ,
+                height="536"
+                class="comic-cover-img"
+                alt="Némesis Estelar"
+              />
+            </div>
+            <div class="comic-info">
+              <h3 class="comic-title">La isla kiam Rö</h3>
+              <span class="comic-genre">Ciencia Ficción</span>
+              <p class="comic-desc">
+                Un cazador de tesoros llega a una isla aislada donde el
+                verdadero botín no es un objeto, sino su destino: integrarse… o
+                desaparecer.
+              </p>
+              <!-- HIPERVÍNCULO AQUÍ -->
+              <a href="la_isla_kyah_ro.html" class="read-button-link"
+                >Leer Ahora</a
+              >
+            </div>
+          </div>
+
+          <!-- CÓMIC 3 - CRÓNICAS DEL CAOS -->
+          <div class="comic-card">
+            <div class="comic-cover">
+              <img
+                src="https://via.placeholder.com/400x380/660000/000000?text=CRÓNICAS+DEL+CAOS"
+                class="comic-cover-img"
+                alt="Crónicas del Caos"
+              />
+            </div>
+            <div class="comic-info">
+              <h3 class="comic-title">Crónicas del Caos</h3>
+              <span class="comic-genre">Fantasía Épica</span>
+              <p class="comic-desc">
+                Cinco héroes improbables se unen para prevenir que el Dios del
+                Caos escape de su prisión milenaria.
+              </p>
+              <!-- HIPERVÍNCULO AQUÍ -->
+              <a href="comic_viewer1.html" class="read-button-link"
+                >Leer Ahora</a
+              >
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- SECCIÓN DE RELATOS -->
+      <div class="content-section">
+        <h2 class="section-title" id="historias">Relatos Narrativos</h2>
+        <div class="comics-grid">
+          <!-- RELATO 1 - EL SUSURRO EN LAS PAREDES -->
+          <div class="comic-card">
+            <div class="comic-cover">
+              <img
+                src="https://via.placeholder.com/400x380/800000/000000?text=EL+SUSURRO"
+                class="comic-cover-img"
+                alt="El Susurro en las Paredes"
+              />
+            </div>
+            <div class="comic-info">
+              <h3 class="comic-title">Los N</h3>
+              <span class="comic-genre">Terror Psicológico</span>
+              <p class="comic-desc">
+                Un joven descubre que su realidad está fracturada por "los N",
+                una fuerza oculta que alimenta el miedo y convierte lo cotidiano
+                en una amenaza. La historia explora la paranoia y la delgada
+                línea entre lo real y lo imaginado.
+              </p>
+              <!-- HIPERVÍNCULO AQUÍ -->
+              <a
+                href="comic-viewer.html?comic=susurro-paredes&page=1"
+                class="read-button-link"
+                >Leer Relato</a
+              >
+            </div>
+          </div>
+
+          <!-- RELATO 2 - EL ÚLTIMO FARO -->
+          <div class="comic-card">
+            <div class="comic-cover">
+              <img
+                src="https://via.placeholder.com/400x380/990000/000000?text=EL+ÚLTIMO+FARO"
+                class="comic-cover-img"
+                alt="El Último Faro"
+              />
+            </div>
+            <div class="comic-info">
+              <h3 class="comic-title">El Último Faro</h3>
+              <span class="comic-genre">Drama Histórico</span>
+              <p class="comic-desc">
+                En una isla remota, el último farero mantiene viva una llama que
+                es mucho más que una simple luz para los barcos.
+              </p>
+              <!-- HIPERVÍNCULO AQUÍ -->
+              <a href="" class="read-button-link">Leer Relato</a>
+            </div>
+          </div>
+
+          <!-- RELATO 3 - CICATRICES DEL ALMA -->
+          <div class="comic-card">
+            <div class="comic-cover">
+              <img
+                src="https://via.placeholder.com/400x380/660000/000000?text=CICATRICES"
+                class="comic-cover-img"
+                alt="Cicatrices del Alma"
+              />
+            </div>
+            <div class="comic-info">
+              <h3 class="comic-title">Cicatrices del Alma</h3>
+              <span class="comic-genre">Drama Urbano</span>
+              <p class="comic-desc">
+                Tres vidas se entrelazan en una ciudad donde cada cicatriz
+                cuenta una historia de supervivencia y redención.
+              </p>
+              <!-- HIPERVÍNCULO AQUÍ -->
+              <a
+                href="comic-viewer.html?comic=cicatrices-alma&page=1"
+                class="read-button-link"
+                >Leer Relato</a
+              >
+            </div>
+          </div>
+        </div>
+      </div>
+    </main>
+
+    <!-- FOOTER -->
+    <footer class="main-footer">
+      <div class="footer-content">
+        <div class="footer-column">
+          <div class="footer-logo">HistoComic</div>
+          <p class="footer-description">
+            Plataforma dedicada a la publicación de cómics y narrativas
+            originales. Creamos mundos, personajes e historias que trascienden
+            el papel y la pantalla.
+          </p>
+        </div>
+
+        <div class="footer-column">
+          <h3>Enlaces Rápidos</h3>
+          <ul class="footer-links">
+            <li><a href="#inicio">Inicio</a></li>
+            <li><a href="#comics">Todos los Cómics</a></li>
+            <li><a href="#historias">Relatos Completos</a></li>
+            <li><a href="#autores">Nuestros Autores</a></li>
+          </ul>
+        </div>
+
+        <div class="footer-column">
+          <h3>Contacto</h3>
+          <p class="footer-description">
+            ¿Tienes preguntas o sugerencias?<br />
+            Escríbenos a: contacto@histocomic.com
+          </p>
+        </div>
+      </div>
+
+      <div class="footer-bottom">
+        <p>
+          © 2024 HistoComic. Todos los derechos reservados. | ¡Las mejores
+          historias merecen ser contadas!
+        </p>
+      </div>
+    </footer>
+
+    <script>
+      // JavaScript integrado para el switch y modal
+      document.addEventListener("DOMContentLoaded", function () {
+        // Elementos del DOM
+        const deviceSwitch = document.getElementById("deviceSwitch");
+        const modal = document.getElementById("orientationModal");
+        const modalTitle = document.getElementById("modalTitle");
+        const modalMessage = document.getElementById("modalMessage");
+        const confirmButton = document.getElementById("confirmButton");
+        const cancelButton = document.getElementById("cancelButton");
+        const modeText = document.getElementById("modeText");
+        const mobileIcon = document.querySelector(".mobile-icon");
+        const pcIcon = document.querySelector(".pc-icon");
+        const statusIndicator = document.querySelector(".status-indicator");
+
+        let pendingChange = null;
+
+        // Cargar preferencia guardada
+        const savedOrientation = localStorage.getItem("histocomic-orientation");
+        if (savedOrientation === "horizontal") {
+          deviceSwitch.checked = true;
+          applyHorizontalMode();
+        } else {
+          deviceSwitch.checked = false;
+          applyVerticalMode();
+        }
+
+        // Actualizar UI según el estado inicial
+        updateUI();
+
+        // Evento para cambiar el switch
+        deviceSwitch.addEventListener("change", function () {
+          const isToMobile = !this.checked;
+
+          // Mostrar modal de confirmación
+          showConfirmationModal(isToMobile);
+
+          // Revertir el cambio hasta confirmar
+          this.checked = !this.checked;
+        });
+
+        // Función para mostrar el modal de confirmación
+        function showConfirmationModal(isToMobile) {
+          if (isToMobile) {
+            modalTitle.textContent = "ACTIVAR MODO VERTICAL";
+            modalMessage.textContent =
+              "¿Estás seguro de activar el modo de lectura vertical? (Recomendado para móvil)";
+          } else {
+            modalTitle.textContent = "ACTIVAR MODO HORIZONTAL";
+            modalMessage.textContent =
+              "¿Estás seguro de activar el modo de lectura horizontal? (Recomendado para PC)";
+          }
+
+          pendingChange = isToMobile;
+          modal.style.display = "flex";
+          document.body.style.overflow = "hidden";
+        }
+
+        // Función para ocultar el modal
+        function hideModal() {
+          modal.style.display = "none";
+          document.body.style.overflow = "auto";
+          pendingChange = null;
+        }
+
+        // Confirmar cambio
+        confirmButton.addEventListener("click", function () {
+          if (pendingChange !== null) {
+            if (pendingChange) {
+              // Cambiar a modo móvil (vertical)
+              deviceSwitch.checked = false;
+              applyVerticalMode();
+            } else {
+              // Cambiar a modo PC (horizontal)
+              deviceSwitch.checked = true;
+              applyHorizontalMode();
+            }
+            updateUI();
+            saveOrientation();
+          }
+          hideModal();
+        });
+
+        // Cancelar cambio
+        cancelButton.addEventListener("click", function () {
+          hideModal();
+        });
+
+        // Cerrar modal al hacer clic fuera
+        modal.addEventListener("click", function (e) {
+          if (e.target === modal) {
+            hideModal();
+          }
+        });
+
+        // Función para aplicar modo vertical
+        function applyVerticalMode() {
+          document.body.classList.remove("horizontal-mode");
+          document.body.classList.add("vertical-mode");
+
+          // Ajustar carrusel
+          const carouselImages = document.querySelectorAll(".carousel-image");
+          carouselImages.forEach((img) => {
+            img.style.height = "400px";
+          });
+        }
+
+        // Función para aplicar modo horizontal
+        function applyHorizontalMode() {
+          document.body.classList.remove("vertical-mode");
+          document.body.classList.add("horizontal-mode");
+
+          // Ajustar carrusel
+          const carouselImages = document.querySelectorAll(".carousel-image");
+          carouselImages.forEach((img) => {
+            img.style.height = "600px";
+          });
+        }
+
+        // Función para actualizar la interfaz
+        function updateUI() {
+          if (deviceSwitch.checked) {
+            // Modo horizontal
+            modeText.textContent = "Modo Horizontal";
+            mobileIcon.classList.remove("active");
+            pcIcon.classList.add("active");
+            statusIndicator.style.backgroundColor = "#cc0000";
+            statusIndicator.style.boxShadow = "0 0 10px #cc0000";
+          } else {
+            // Modo vertical
+            modeText.textContent = "Modo Vertical";
+            mobileIcon.classList.add("active");
+            pcIcon.classList.remove("active");
+            statusIndicator.style.backgroundColor = "#00cc00";
+            statusIndicator.style.boxShadow = "0 0 10px #00cc00";
+          }
+        }
+
+        // Función para guardar la preferencia
+        function saveOrientation() {
+          const orientation = deviceSwitch.checked ? "horizontal" : "vertical";
+          localStorage.setItem("histocomic-orientation", orientation);
+        }
+
+        // Funcionalidad del carrusel
+        const carouselTrack = document.querySelector(".carousel-track");
+        const slides = document.querySelectorAll(".carousel-slide");
+        const indicators = document.querySelectorAll(".indicator");
+        let currentSlide = 0;
+        let slideInterval;
+
+        // Función para mover el carrusel
+        function goToSlide(slideIndex) {
+          if (slideIndex < 0) slideIndex = slides.length - 1;
+          if (slideIndex >= slides.length) slideIndex = 0;
+
+          currentSlide = slideIndex;
+          carouselTrack.style.transform = `translateX(-${currentSlide * 100}%)`;
+
+          // Actualizar indicadores
+          indicators.forEach((indicator, index) => {
+            if (index === currentSlide) {
+              indicator.classList.add("active");
+            } else {
+              indicator.classList.remove("active");
+            }
+          });
+        }
+
+        // Función para avanzar al siguiente slide
+        function nextSlide() {
+          goToSlide(currentSlide + 1);
+        }
+
+        // Iniciar carrusel automático
+        function startCarousel() {
+          slideInterval = setInterval(nextSlide, 5000);
+        }
+
+        // Detener carrusel automático
+        function stopCarousel() {
+          clearInterval(slideInterval);
+        }
+
+        // Event listeners para los indicadores
+        indicators.forEach((indicator) => {
+          indicator.addEventListener("click", function () {
+            const slideIndex = parseInt(this.getAttribute("data-slide"));
+            goToSlide(slideIndex);
+            stopCarousel();
+            startCarousel();
+          });
+        });
+
+        // Iniciar carrusel
+        startCarousel();
+
+        // Pausar carrusel al interactuar
+        carouselTrack.addEventListener("mouseenter", stopCarousel);
+        carouselTrack.addEventListener("mouseleave", startCarousel);
+
+        // Navegación suave para enlaces internos
+        document.querySelectorAll('a[href^="#"]').forEach((anchor) => {
+          anchor.addEventListener("click", function (e) {
+            e.preventDefault();
+            const targetId = this.getAttribute("href");
+            if (targetId === "#") return;
+            const targetElement = document.querySelector(targetId);
+            if (targetElement) {
+              window.scrollTo({
+                top: targetElement.offsetTop - 80,
+                behavior: "smooth",
+              });
+            }
+          });
+        });
+
+        // Mensaje de confirmación para enlaces externos (opcional)
+        document.querySelectorAll(".read-button-link").forEach((link) => {
+          link.addEventListener("click", function (e) {
+            console.log(`Redirigiendo a: ${this.getAttribute("href")}`);
+            // El navegador seguirá automáticamente el enlace
+          });
+        });
+      });
+    </script>
+  </body>
+</html>

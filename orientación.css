@@ -1,0 +1,111 @@
+/* Estilos para orientación vertical (modo móvil) */
+.vertical-mode {
+  /* Ajustes específicos para modo vertical */
+  overflow-x: hidden;
+}
+
+.vertical-mode .main-content {
+  max-width: 100%;
+  padding: 0 15px;
+}
+
+.vertical-mode .comics-grid {
+  grid-template-columns: 1fr;
+  gap: 1.5rem;
+}
+
+.vertical-mode .featured-content {
+  flex-direction: column;
+}
+
+.vertical-mode .carousel-image {
+  height: 400px;
+}
+
+.vertical-mode .carousel-title {
+  font-size: 2rem;
+}
+
+.vertical-mode .section-title {
+  font-size: 2rem;
+}
+
+.vertical-mode .histocomic-title {
+  font-size: 3rem;
+}
+
+.vertical-mode .nav-links {
+  gap: 1.5rem;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+.vertical-mode .footer-content {
+  grid-template-columns: 1fr;
+  gap: 2rem;
+}
+
+/* Estilos para orientación horizontal (modo PC) */
+.horizontal-mode {
+  /* Ajustes específicos para modo horizontal */
+}
+
+.horizontal-mode .main-content {
+  max-width: 1400px;
+}
+
+.horizontal-mode .comics-grid {
+  grid-template-columns: repeat(3, 1fr);
+}
+
+.horizontal-mode .carousel-image {
+  height: 600px;
+}
+
+/* Animación de transición entre modos */
+body {
+  transition: all 0.5s ease;
+}
+
+/* Media queries para responsividad adicional */
+@media (max-width: 768px) {
+  .device-switcher {
+    top: 10px;
+    right: 10px;
+    padding: 8px 12px;
+  }
+
+  .switch-wrapper {
+    gap: 10px;
+  }
+
+  .mode-text {
+    font-size: 12px;
+    min-width: 100px;
+  }
+
+  .switch {
+    width: 60px;
+    height: 30px;
+  }
+
+  .slider-ball {
+    height: 22px;
+    width: 22px;
+  }
+
+  #deviceSwitch:checked + .switch-wrapper .slider-ball {
+    transform: translateX(30px);
+  }
+}
+
+/* Estilos para pantallas muy pequeñas */
+@media (max-width: 480px) {
+  .device-switcher {
+    position: static;
+    margin: 10px auto;
+    width: 90%;
+    display: flex;
+    justify-content: center;
+  }
+}
